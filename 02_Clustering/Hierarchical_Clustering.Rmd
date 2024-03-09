@@ -22,6 +22,7 @@ data <- read.csv('TrustPilot_Cleaned_Doc_Term.csv')
 data_to_cluster <- data %>% 
   select(-UID)
 
+# Sampling the data
 data_to_cluster <- data %>%
   sample_n(100, replace = FALSE)
 
