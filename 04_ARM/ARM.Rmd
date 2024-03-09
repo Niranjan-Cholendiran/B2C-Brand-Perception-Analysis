@@ -1,0 +1,92 @@
+---
+title: "ARM"
+author: "Niranjan"
+date: "2024-02-22"
+output: html_document
+---
+
+```{r Install required packages}
+install.packages("arules")
+install.packages("TSP")
+install.packages("data.table")
+install.packages("arulesViz", dependencies = TRUE)
+install.packages("sp")
+install.packages("openxlsx")
+install.packages("readxl")
+```
+
+```{r Import libraries}
+library(tidyverse)
+library(viridis)
+library(arules)
+library(TSP)
+library(data.table)
+library(tcltk)
+library(dplyr)
+library(devtools)
+library(purrr)
+library(tidyr)
+library(openxlsx)
+library(arulesViz)
+```
+
+```{r Load and prepare datset}
+data= read.csv('Basket_data.csv')
+data <- data %>%
+  mutate_all(~na_if(., ""))
+
+head(data,15)
+
+basket <- data 
+
+# Convert all columns to factors as required by ARM models
+basket <- mutate_all(basket, as.factor)
+
+# Remove column names
+#names(basket) <- NULL
+
+head(basket,10)
+
+#str(basket)
+#null_values <- is.na(data)
+#print(which(null_values, arr.ind = TRUE))
+```
+
+
+```{r}
+#Install and load required packages
+#install.packages("networkD3")
+#library(networkD3)
+
+# Assuming 'rules' is your association rules object obtained from Apriori
+# Assuming 'rules' is your association rules object obtained from Apriori
+
+# Convert rules to a data frame suitable for networkD3
+transactions <- as(basket, "transactions")
+rules <- arules::apriori(transactions, parameter = list(support=.003, confidence=.005, minlen=2))
+inspect(rules)
+Rules_df <- as.data.frame(inspect(rules))
+write.xlsx(Rules_df, file = "Rules_Result.xlsx", row.names = FALSE)
+
+# Sorted rules
+subrules <- head(sort(rules, by="lift"),15)
+inspect(subrules)
+plot(subrules)
+
+
+#plot(subrules, method="graph", engine="interactive")
+plot(subrules, method="graph", engine="htmlwidget")
+
+plot_obj <- plot(subrules, method="graph", engine="htmlwidget")
+plot_obj
+
+
+# Save the plot as an HTML file
+library(htmlwidgets)
+saveWidget(plot_obj, file="b2c_arm_interactive_plot.html")
+
+plot(rules, method="paracoord", engine="default")
+plot(rules, method="graph", control = list(type = "items", main = "Association Rules Network"), engine="igraph")
+
+
+```
